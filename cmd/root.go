@@ -6,13 +6,15 @@ package cmd
 import (
 	"Utkarsh4517/ginister/config"
 	"Utkarsh4517/ginister/controllers"
+	"Utkarsh4517/ginister/docker"
 	"Utkarsh4517/ginister/models"
 	"Utkarsh4517/ginister/routes"
+	"Utkarsh4517/ginister/start"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
-	"Utkarsh4517/ginister/docker"
+
 	"github.com/spf13/cobra"
 )
 
@@ -51,6 +53,11 @@ func createProject(projectName string, reader *bufio.Reader) {
     err := docker.CreateDockerfile(projectName)
     if err != nil {
         fmt.Printf("Error creating Dockerfile: %v\n", err)
+    }
+
+    err = start.CreateMainFile(projectName)
+    if err != nil {
+        fmt.Printf("Error creating main.go: %v\n", err)
     }
 
     var modelNames []string
