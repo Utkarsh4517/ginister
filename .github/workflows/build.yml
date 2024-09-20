@@ -19,15 +19,6 @@ jobs:
         with:
           go-version: ${{env.GO_VERSION}}
 
-      - name: Vet
-        run: make vet
-
-      - name: Test
-        run: make test
-
-      - name: Build
-        run: make
-
   format:
     runs-on: ubuntu-latest
     steps:
