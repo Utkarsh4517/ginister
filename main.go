@@ -1,12 +1,10 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package main
 
 import (
 	"Utkarsh4517/ginister/cmd"
-
 )
 
 func main() {
@@ -14,5 +12,5 @@ func main() {
 	// config.ConnectDB()
 	// router := routes.SetupRouter()
 
-    // router.Run(":8080")
+	// router.Run(":8080")
 }

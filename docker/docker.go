@@ -1,12 +1,12 @@
 package docker
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 )
 
 func CreateDockerfile(projectDir string) error {
-    content := `FROM golang:1.23
+	content := `FROM golang:1.23
 
 WORKDIR /app
 
@@ -22,13 +22,13 @@ EXPOSE 8080
 CMD ["./main"]
 `
 
-    filePath := fmt.Sprintf("%s/Dockerfile", projectDir)
-    file, err := os.Create(filePath)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
+	filePath := fmt.Sprintf("%s/Dockerfile", projectDir)
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-    _, err = file.WriteString(content)
-    return err
+	_, err = file.WriteString(content)
+	return err
 }
