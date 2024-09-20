@@ -6,7 +6,8 @@ package cmd
 
 import (
 	"os"
-
+	"fmt"
+    "bufio"
 	"github.com/spf13/cobra"
 )
 
@@ -48,4 +49,12 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+func createProject(projectName string) {
+	fmt.Println("Creating project: ", projectName, " powered by ginister")
+	os.Mkdir(projectName, os.ModePerm)
+	os.Mkdir(projectName + "/config", os.ModePerm)
+    os.Mkdir(projectName + "/controllers", os.ModePerm)
+    os.Mkdir(projectName + "/models", os.ModePerm)
+    os.Mkdir(projectName + "/routes", os.ModePerm)
+}
 
