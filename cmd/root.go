@@ -1,20 +1,19 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
-	"os"
-	"fmt"
-    "bufio"
-	"github.com/spf13/cobra"
-	"strings"
 	"Utkarsh4517/ginister/config"
-	"Utkarsh4517/ginister/models"
 	"Utkarsh4517/ginister/controllers"
+	"Utkarsh4517/ginister/models"
 	"Utkarsh4517/ginister/routes"
-
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+	"Utkarsh4517/ginister/docker"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -44,31 +43,36 @@ func runGenerator(cmd *cobra.Command, args []string) {
 }
 
 func createProject(projectName string, reader *bufio.Reader) {
-	fmt.Println("Creating project:", projectName, "powered by ginister")
+    fmt.Println("Creating project:", projectName, "powered by ginister")
 
-	createProjectStructure(projectName)
+    createProjectStructure(projectName)
 
-	config.GenerateConfigFile(projectName)
+    config.GenerateConfigFile(projectName)
+    err := docker.CreateDockerfile(projectName)
+    if err != nil {
+        fmt.Printf("Error creating Dockerfile: %v\n", err)
+    }
 
-	var modelNames []string
+    var modelNames []string
 
-	for {
-		fmt.Print("Enter a model name (or press enter to finish): ")
-		modelName, _ := reader.ReadString('\n')
-		modelName = strings.TrimSpace(modelName)
+    for {
+        fmt.Print("Enter a model name (or press enter to finish): ")
+        modelName, _ := reader.ReadString('\n')
+        modelName = strings.TrimSpace(modelName)
 
-		if modelName == "" {
-			break
-		}
+        if modelName == "" {
+            break
+        }
 
-		modelNames = append(modelNames, modelName)
-		fields := getModelFields(reader)
-		models.GenerateModelFile(projectName, modelName, fields)
-		controllers.GenerateControllerFile(projectName, modelName)
-	}
-	routes.GenerateRoutesFile(projectName, modelNames)
-	fmt.Println("Project setup complete!")
+        modelNames = append(modelNames, modelName)
+        fields := getModelFields(reader)
+        models.GenerateModelFile(projectName, modelName, fields)
+        controllers.GenerateControllerFile(projectName, modelName)
+    }
+    routes.GenerateRoutesFile(projectName, modelNames)
+    fmt.Println("Project setup complete!")
 }
+
 
 func createProjectStructure(projectName string) {
 	directories := []string{"", "/config", "/controllers", "/models", "/routes"}
