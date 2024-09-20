@@ -1,31 +1,43 @@
+// routes/routes.go
 package routes
 
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
-func generateRoutesFile(modelName string) { 
-	routesFile := "./routes/routes.go"
+func GenerateRoutesFile(projectName string, modelNames []string) {
+	routesFile := fmt.Sprintf("%s/routes/routes.go", projectName)
+	file, _ := os.Create(routesFile)
+	defer file.Close()
 
-	if _, err := os.Stat(routesFile); os.IsNotExist(err) {
-        file, _ := os.Create(routesFile)
-        defer file.Close()
+	content := `package routes
 
-        file.WriteString("package routes\n\nimport (\n\t\"github.com/gin-gonic/gin\"\n\t\"../controllers\"\n)\n\n")
-        file.WriteString("func SetupRouter() *gin.Engine {\n\trouter := gin.Default()\n\n")
-        file.WriteString("\treturn router\n}")
-    }
+import (
+	"github.com/gin-gonic/gin"
+	"../controllers"
+)
 
-	file, _ := os.OpenFile(routesFile, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-    defer file.Close()
+func SetupRouter() *gin.Engine {
+	router := gin.Default()
 
-    // Register routes for the current model
-    file.WriteString(fmt.Sprintf("\trouter.GET(\"/%s\", controllers.Get%s)\n", modelName, modelName))
-    file.WriteString(fmt.Sprintf("\trouter.POST(\"/%s\", controllers.Create%s)\n", modelName, modelName))
-    file.WriteString(fmt.Sprintf("\trouter.PUT(\"/%s/:id\", controllers.Update%s)\n", modelName, modelName))
-    file.WriteString(fmt.Sprintf("\trouter.DELETE(\"/%s/:id\", controllers.Delete%s)\n", modelName, modelName))
+`
 
-    fmt.Printf("Routes for %s added successfully!\n", modelName)
+	for _, modelName := range modelNames {
+		content += fmt.Sprintf(`	router.GET("/%s", controllers.Get%s)
+	router.POST("/%s", controllers.Create%s)
+	router.PUT("/%s/:id", controllers.Update%s)
+	router.DELETE("/%s/:id", controllers.Delete%s)
 
+`, strings.ToLower(modelName), modelName, strings.ToLower(modelName), modelName,
+			strings.ToLower(modelName), modelName, strings.ToLower(modelName), modelName)
+	}
+
+	content += `	return router
+}
+`
+
+	file.WriteString(content)
+	fmt.Println("Routes file created successfully!")
 }

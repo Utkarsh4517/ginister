@@ -9,23 +9,19 @@ import (
 	"fmt"
     "bufio"
 	"github.com/spf13/cobra"
+	"strings"
+	"Utkarsh4517/ginister/config"
+	"Utkarsh4517/ginister/models"
+	"Utkarsh4517/ginister/controllers"
+	"Utkarsh4517/ginister/routes"
+
 )
-
-
 
 var rootCmd = &cobra.Command{
 	Use:   "ginister",
 	Short: "CLI to generate Go-Gin projects with MySQL and GORM",
-	Run: func(cmd *cobra.Command, args []string) {
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter the project name: ")
-        projectName, _ := reader.ReadString('\n')
-        createProject(projectName)
-
-	},
-	
+	Run:   runGenerator,
 }
-
 
 func Execute() {
 	err := rootCmd.Execute()
@@ -35,23 +31,67 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ginister.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func createProject(projectName string) {
-	fmt.Println("Creating project: ", projectName, " powered by ginister")
-	os.Mkdir(projectName, os.ModePerm)
-	os.Mkdir(projectName + "/config", os.ModePerm)
-    os.Mkdir(projectName + "/controllers", os.ModePerm)
-    os.Mkdir(projectName + "/models", os.ModePerm)
-    os.Mkdir(projectName + "/routes", os.ModePerm)
+func runGenerator(cmd *cobra.Command, args []string) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter the project name: ")
+	projectName, _ := reader.ReadString('\n')
+	projectName = strings.TrimSpace(projectName)
+
+	createProject(projectName, reader)
 }
 
+func createProject(projectName string, reader *bufio.Reader) {
+	fmt.Println("Creating project:", projectName, "powered by ginister")
+
+	createProjectStructure(projectName)
+
+	config.GenerateConfigFile(projectName)
+
+	var modelNames []string
+
+	for {
+		fmt.Print("Enter a model name (or press enter to finish): ")
+		modelName, _ := reader.ReadString('\n')
+		modelName = strings.TrimSpace(modelName)
+
+		if modelName == "" {
+			break
+		}
+
+		modelNames = append(modelNames, modelName)
+		fields := getModelFields(reader)
+		models.GenerateModelFile(projectName, modelName, fields)
+		controllers.GenerateControllerFile(projectName, modelName)
+	}
+	routes.GenerateRoutesFile(projectName, modelNames)
+	fmt.Println("Project setup complete!")
+}
+
+func createProjectStructure(projectName string) {
+	directories := []string{"", "/config", "/controllers", "/models", "/routes"}
+	for _, dir := range directories {
+		err := os.MkdirAll(projectName+dir, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Error creating directory %s: %v\n", projectName+dir, err)
+		}
+	}
+}
+
+func getModelFields(reader *bufio.Reader) []string {
+	var fields []string
+	for {
+		fmt.Print("Enter a field (name type) or press enter to finish: ")
+		field, _ := reader.ReadString('\n')
+		field = strings.TrimSpace(field)
+
+		if field == "" {
+			break
+		}
+
+		fields = append(fields, field)
+	}
+	return fields
+}
